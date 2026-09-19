@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CBC Kenya — Curriculum Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg: #122219;
+    --surface: #1B3227;
+    --surface-2: #223D2E;
+    --line: #33513F;
+    --ivory: #F3EEE0;
+    --muted: #9FB4A2;
+    --gold: #D6A54C;
+    --gold-dim: #a9843f;
+    --rust: #C15A3C;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 85% -10%, rgba(214,165,76,0.08), transparent),
+      var(--bg);
+    color:var(--ivory);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.serif{font-family:'Fraunces',serif;}
+  a{color:var(--gold);}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+
+  /* ---------- header ---------- */
+  header.top{
+    border-bottom:1px solid var(--line);
+    padding:22px 0;
+  }
+  .top-row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand .mark{color:var(--gold);font-size:13px;letter-spacing:.04em;}
+  .brand h1{font-size:22px;font-weight:600;margin:0;}
+  .clock{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;}
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:64px 0 48px;
+    display:grid;
+    grid-template-columns:1.3fr 1fr;
+    gap:48px;
+    border-bottom:1px solid var(--line);
+    align-items:end;
+  }
+  .hero h2{
+    font-size:clamp(34px,4.6vw,54px);
+    font-weight:500;
+    line-height:1.08;
+    margin:0 0 18px;
+    max-width:16ch;
+  }
+  .hero p{color:var(--muted);max-width:46ch;font-size:16px;margin:0;}
+  .hero-stat{
+    justify-self:end;
+    text-align:right;
+    border-left:1px solid var(--line);
+    padding-left:32px;
+  }
+  .hero-stat .num{font-family:'Fraunces',serif;font-size:64px;color:var(--gold);line-height:1;font-weight:600;}
+  .hero-stat .label{color:var(--muted);font-size:13px;margin-top:8px;max-width:22ch;margin-left:auto;}
+  .hero-stat .src{font-size:11px;color:var(--muted);opacity:.7;margin-top:6px;}
+
+  /* ---------- section shell ---------- */
+  section{padding:56px 0;border-bottom:1px solid var(--line);}
+  .section-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:32px;flex-wrap:wrap;}
+  .section-head h2{font-size:26px;font-weight:600;margin:0;}
+  .section-head .note{font-size:13px;color:var(--muted);}
+  .eyebrow{color:var(--gold);font-size:12px;margin:0 0 6px;}
+
+  /* ---------- pathway timeline ---------- */
+  .pathway{display:grid;grid-template-columns:repeat(4,1fr);gap:0;}
+  .stage{position:relative;padding:20px 20px 0 0;border-top:2px solid var(--gold-dim);}
+  .stage:first-child{border-top-left-radius:2px;}
+  .stage .n{font-family:'Fraunces',serif;font-size:34px;color:var(--gold);margin-bottom:6px;}
+  .stage h3{font-size:16px;margin:0 0 6px;font-weight:600;}
+  .stage p{margin:0;color:var(--muted);font-size:13px;}
+  .stage .yrs{font-size:12px;color:var(--muted);opacity:.8;}
+
+  /* ---------- indicators grid ---------- */
+  .indicators{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);}
+  .indicator{background:var(--surface);padding:22px;}
+  .indicator h4{margin:0 0 4px;font-size:13px;color:var(--muted);font-weight:500;}
+  .indicator .val{font-family:'Fraunces',serif;font-size:30px;color:var(--ivory);margin-bottom:10px;}
+  .indicator canvas{max-height:60px;}
+  .indicator .yr{font-size:11px;color:var(--muted);opacity:.75;margin-top:6px;}
+
+  /* ---------- news ---------- */
+  .news-toolbar{display:flex;gap:10px;align-items:center;}
+  button.refresh{
+    background:transparent;border:1px solid var(--gold-dim);color:var(--gold);
+    font-family:'Inter',sans-serif;font-size:13px;padding:7px 14px;border-radius:3px;cursor:pointer;
+  }
+  button.refresh:hover{background:rgba(214,165,76,0.1);}
+  .news-list{display:flex;flex-direction:column;}
+  .news-item{
+    display:grid;grid-template-columns:120px 1fr;gap:20px;
+    padding:20px 0;border-top:1px solid var(--line);
+  }
+  .news-item:first-child{border-top:none;}
+  .news-item .src{color:var(--muted);font-size:12px;padding-top:3px;}
+  .news-item a{color:var(--ivory);text-decoration:none;font-size:16px;font-weight:500;line-height:1.35;}
+  .news-item a:hover{color:var(--gold);}
+  .news-item .date{color:var(--muted);font-size:12px;margin-top:6px;}
+  .news-state{color:var(--muted);font-size:14px;padding:12px 0;}
+  .news-state a{color:var(--gold);}
+
+  /* ---------- footer ---------- */
+  footer{padding:32px 0 60px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+
+  @media (max-width:760px){
+    .hero{grid-template-columns:1fr;}
+    .hero-stat{justify-self:start;text-align:left;border-left:none;border-top:1px solid var(--line);padding-left:0;padding-top:20px;}
+    .pathway{grid-template-columns:1fr 1fr;row-gap:24px;}
+    .indicators{grid-template-columns:1fr;}
+    .news-item{grid-template-columns:1fr;gap:6px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-row">
+    <div class="brand">
+      <span class="mark">◆</span>
+      <h1>CBC Kenya Dashboard</h1>
+    </div>
+    <div class="clock" id="clock">—</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="hero" style="border-bottom:1px solid var(--line);padding-top:64px;">
+    <div>
+      <h2>Tracking Kenya's Competency‑Based Curriculum, as it happens.</h2>
+      <p>A live briefing on the 2‑6‑3‑3 education reform — current enrollment and spending indicators from the World Bank, alongside real‑time reporting on CBC policy, junior secondary transition, and classroom rollout.</p>
+    </div>
+    <div class="hero-stat">
+      <div class="num" id="heroStat">—</div>
+      <div class="label">Net primary school enrollment rate, Kenya</div>
+      <div class="src">World Bank Open Data · loading…</div>
+    </div>
+  </section>
+
+  <section id="pathway-section">
+    <p class="eyebrow">Curriculum structure</p>
+    <div class="section-head">
+      <h2>The 2‑6‑3‑3 pathway</h2>
+      <div class="note">Pre‑primary through senior secondary</div>
+    </div>
+    <div class="pathway">
+      <div class="stage">
+        <div class="n">01</div>
+        <h3>Pre‑Primary</h3>
+        <div class="yrs">2 years</div>
+        <p>PP1–PP2. Play‑based foundations in language, numeracy, and motor skills before Grade 1.</p>
+      </div>
+      <div class="stage">
+        <div class="n">02</div>
+        <h3>Primary</h3>
+        <div class="yrs">6 years</div>
+        <p>Grades 1–6, split into lower and upper primary, building core literacy, numeracy and life‑skill competencies.</p>
+      </div>
+      <div class="stage">
+        <div class="n">03</div>
+        <h3>Junior Secondary</h3>
+        <div class="yrs">3 years</div>
+        <p>Grades 7–9. Learners begin choosing subject clusters ahead of the senior‑school pathway decision.</p>
+      </div>
+      <div class="stage">
+        <div class="n">04</div>
+        <h3>Senior Secondary</h3>
+        <div class="yrs">3 years</div>
+        <p>Grades 10–12 across STEM, Social Sciences, and Arts & Sports Science pathways, leading to tertiary or work.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="indicators-section">
+    <p class="eyebrow">Live indicators · World Bank API</p>
+    <div class="section-head">
+      <h2>Education, in numbers</h2>
+      <div class="note" id="indicatorsNote">fetching latest available year…</div>
+    </div>
+    <div class="indicators">
+      <div class="indicator">
+        <h4>Primary net enrollment</h4>
+        <div class="val" id="ind1val">—</div>
+        <canvas id="ind1chart"></canvas>
+        <div class="yr" id="ind1yr"></div>
+      </div>
+      <div class="indicator">
+        <h4>Government education spend (% of GDP)</h4>
+        <div class="val" id="ind2val">—</div>
+        <canvas id="ind2chart"></canvas>
+        <div class="yr" id="ind2yr"></div>
+      </div>
+      <div class="indicator">
+        <h4>Primary pupil–teacher ratio</h4>
+        <div class="val" id="ind3val">—</div>
+        <canvas id="ind3chart"></canvas>
+        <div class="yr" id="ind3yr"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="news-section">
+    <p class="eyebrow">Live feed</p>
+    <div class="section-head">
+      <h2>CBC in the news</h2>
+      <div class="news-toolbar">
+        <span class="note" id="newsUpdated">—</span>
+        <button class="refresh" id="refreshBtn">Refresh</button>
+      </div>
+    </div>
+    <div class="news-list" id="newsList">
+      <div class="news-state">Loading latest coverage…</div>
+    </div>
+  </section>
+
+</div>
+
+<footer class="wrap">
+  <span>Data: World Bank Open Data (indicators) · Google News (headlines). Fetched client‑side on load.</span>
+  <span>Built for GitHub Pages — static, no backend.</span>
+</footer>
+
+<script>
+  // ---------- clock ----------
+  function tick(){
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      now.toLocaleString('en-KE', { dateStyle:'medium', timeStyle:'short' }) + ' · Nairobi';
+  }
+  tick(); setInterval(tick, 30000);
+
+  // ---------- World Bank indicators ----------
+  const WB_BASE = 'https://api.worldbank.org/v2/country/KE/indicator/';
+
+  async function fetchIndicator(code){
+    const url = `${WB_BASE}${code}?format=json&per_page=25&date=2005:2024`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('World Bank request failed');
+    const json = await res.json();
+    const rows = (json[1] || []).filter(r => r.value !== null).sort((a,b)=> a.date - b.date);
+    return rows;
+  }
+
+  function sparkline(canvasId, rows, color){
+    const ctx = document.getElementById(canvasId);
+    if(!ctx || !rows.length) return;
+    new Chart(ctx, {
+      type:'line',
+      data:{
+        labels: rows.map(r=>r.date),
+        datasets:[{
+          data: rows.map(r=>r.value),
+          borderColor: color,
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.3
+        }]
+      },
+      options:{
+        responsive:true,
+        plugins:{ legend:{display:false}, tooltip:{enabled:false} },
+        scales:{ x:{display:false}, y:{display:false} },
+        animation:false
+      }
+    });
+  }
+
+  async function loadIndicator(code, valId, yrId, chartId, suffix=''){
+    try{
+      const rows = await fetchIndicator(code);
+      if(!rows.length) throw new Error('no data');
+      const latest = rows[rows.length-1];
+      document.getElementById(valId).textContent = latest.value.toFixed(1) + suffix;
+      document.getElementById(yrId).textContent = 'Latest available: ' + latest.date;
+      sparkline(chartId, rows, '#D6A54C');
+      return latest;
+    }catch(e){
+      document.getElementById(valId).textContent = 'n/a';
+      document.getElementById(yrId).textContent = 'World Bank data unavailable right now';
+      return null;
+    }
+  }
+
+  async function loadAllIndicators(){
+    const primary = await loadIndicator('SE.PRM.NENR', 'ind1val', 'ind1yr', 'ind1chart', '%');
+    await loadIndicator('SE.XPD.TOTL.GD.ZS', 'ind2val', 'ind2yr', 'ind2chart', '%');
+    await loadIndicator('SE.PRM.ENRL.TC.ZS', 'ind3val', 'ind3yr', 'ind3chart', ':1');
+    document.getElementById('indicatorsNote').textContent = 'World Bank Open Data, Kenya (KE)';
+
+    if(primary){
+      document.getElementById('heroStat').textContent = primary.value.toFixed(1) + '%';
+      document.querySelector('.hero-stat .src').textContent = `World Bank Open Data · ${primary.date}`;
+    }else{
+      document.getElementById('heroStat').textContent = 'n/a';
+      document.querySelector('.hero-stat .src').textContent = 'World Bank Open Data · unavailable';
+    }
+  }
+
+  // ---------- News (Google News RSS via rss2json) ----------
+  const NEWS_QUERY = 'CBC OR "competency based curriculum" Kenya education';
+  const RSS_URL = 'https://news.google.com/rss/search?q=' + encodeURIComponent(NEWS_QUERY) + '&hl=en-KE&gl=KE&ceid=KE:en';
+  // Optional: add your own free key from rss2json.com as &api_key=YOUR_KEY for higher rate limits.
+  const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(RSS_URL);
+
+  function timeAgo(dateStr){
+    const d = new Date(dateStr.replace(' ', 'T'));
+    const diffMs = Date.now() - d.getTime();
+    const mins = Math.round(diffMs/60000);
+    if(mins < 60) return mins + 'm ago';
+    const hrs = Math.round(mins/60);
+    if(hrs < 24) return hrs + 'h ago';
+    return Math.round(hrs/24) + 'd ago';
+  }
+
+  async function loadNews(){
+    const list = document.getElementById('newsList');
+    const updated = document.getElementById('newsUpdated');
+    list.innerHTML = '<div class="news-state">Loading latest coverage…</div>';
+    try{
+      const res = await fetch(RSS2JSON);
+      if(!res.ok) throw new Error('feed request failed');
+      const data = await res.json();
+      const items = (data.items || []).slice(0, 10);
+      if(!items.length) throw new Error('no items');
+      list.innerHTML = '';
+      items.forEach(item=>{
+        const sourceName = (item.author || (data.feed && data.feed.title) || 'News').split(' - ').pop();
+        const row = document.createElement('div');
+        row.className = 'news-item';
+        row.innerHTML = `
+          <div class="src">${sourceName}</div>
+          <div>
+            <a href="${item.link}" target="_blank" rel="noopener">${item.title}</a>
+            <div class="date">${timeAgo(item.pubDate)}</div>
+          </div>`;
+        list.appendChild(row);
+      });
+      updated.textContent = 'Updated ' + new Date().toLocaleTimeString('en-KE', {hour:'2-digit', minute:'2-digit'});
+    }catch(e){
+      list.innerHTML = `<div class="news-state">Live headlines are unavailable right now (feed rate‑limited or offline).
+        You can browse current coverage directly on
+        <a href="https://news.google.com/search?q=${encodeURIComponent(NEWS_QUERY)}" target="_blank" rel="noopener">Google News</a>.</div>`;
+      updated.textContent = 'Update failed';
+    }
+  }
+
+  document.getElementById('refreshBtn').addEventListener('click', loadNews);
+
+  loadAllIndicators();
+  loadNews();
+  setInterval(loadNews, 10 * 60 * 1000); // auto-refresh every 10 minutes
+</script>
+
+</body>
+</html>
